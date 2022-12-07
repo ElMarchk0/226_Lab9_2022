@@ -3,13 +3,12 @@ import java.util.Arrays;
 
 public class Game {
     final static int BOARD_SIZE = 4;
+    final static String CLEAR_BOARD_COMMAND = "C";
+    final static String EMPTY_CELL = "_";
     final static String ERR_MSG = "E";
     final static String OK_MSG = "O";
-    final static String EMPTY_CELL = "_";
-    final static String VIEW_BOARD_COMMAND = "G";
-    final static String CLEAR_BOARD_COMMAND = "C";
     final static String PLACE_PIECE_COMMAND = "P";
-
+    final static String VIEW_BOARD_COMMAND = "G";
     static String[][][] INIT_BOARD_ARRAY = new String[BOARD_SIZE][BOARD_SIZE][BOARD_SIZE];  
     
     // Creates a 3D array with empty cells
@@ -24,7 +23,7 @@ public class Game {
 
     // Print the board in string format
     public static String printBoardAString(String [][][]board){
-        String boardAsString = "";
+        String boardAsString = "\n";
 
         for(int row = 0; row < BOARD_SIZE;  row++){
             for(int col = 0; col < BOARD_SIZE;  col++){
@@ -61,8 +60,8 @@ public class Game {
         return returnValue;
     }
 
-    // Checks if space
-    public static String checkSpace(int[] userInput, String[][][] board){
+    // Checks if space is free
+    public static String placePiece(int[] userInput, String[][][] board){
         int x = userInput[0];
         int y = userInput[1];
         int z = userInput[2];
@@ -74,21 +73,28 @@ public class Game {
             board[x][y][z] = piece;
         }
 
-        return piece;
+        return OK_MSG;
     }
 
-    public static void game(String[][][] board, String userInput){
+    public String game(String userInput){
         char firstChar = userInput.charAt(0);
         String firstCharString = Character.toString(firstChar);
         firstCharString = firstCharString.toUpperCase();
         String boardInGame[][][] = boardArray(INIT_BOARD_ARRAY);
-
+        String output = "E*";
+        System.out.println(firstCharString);
         try{
-            if(firstCharString == VIEW_BOARD_COMMAND){
-                System.out.println(printBoardAString(boardInGame));
+            if(firstCharString.equals(VIEW_BOARD_COMMAND)){
+                output = printBoardAString(boardInGame);
+                return output;
+            } else if (firstCharString.equals(PLACE_PIECE_COMMAND)){
+                int[] splitUserInput = splitUserInput(userInput);
+                output = placePiece(splitUserInput, boardInGame);
+                return output;
             }
         } catch (Exception e){
             throw new Error(ERR_MSG);
         }
+        return output;
     }
 }

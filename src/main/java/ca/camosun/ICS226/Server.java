@@ -1,5 +1,4 @@
 package ca.camosun.ICS226;
-
 import java.net.*;
 import java.io.*;
 
@@ -11,22 +10,46 @@ public class Server {
 		this.port = port; 
 	}
 
-	public void serve() {
-		try ( 
-			ServerSocket serverSocket = new ServerSocket(port);
-			Socket clientSocket = serverSocket.accept();
+	public void delegate(Socket clientSocket){
+		Game g = new Game();
+		try(
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(
-				new InputStreamReader(clientSocket.getInputStream()));
-		) {
-			while (true) {
+			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));			
+		){
+			while(true){
 				String inputLine = in.readLine();
-				if (inputLine == null) {
+				if(inputLine == null){
 					break;
 				}
-				System.out.println(inputLine);	
-				out.println(inputLine);
-			}
+				String gameOutput = g.game(inputLine);
+				synchronized(this){
+					System.out.println(gameOutput);
+				}
+				out.println(Thread.currentThread() + gameOutput);
+			}	
+			clientSocket.close();		
+		} catch (Exception e){
+			System.err.println(e);
+			System.exit(-2);
+		}
+	} 
+
+
+	public void serve() {
+		try ( 
+			ServerSocket serverSocket = new ServerSocket(port);			
+		) {
+			try{
+				while (true) {	
+					Socket clientSocket = serverSocket.accept();
+					Runnable runnable = () -> this.delegate(clientSocket);
+					Thread t = new Thread(runnable);
+					t.start();
+				}
+			} catch(Exception e){
+				System.err.println(e);
+				System.exit(-5);
+			}			
 		} catch (IOException e) {
 			System.err.println(e);
 			System.exit(-2);
@@ -39,9 +62,10 @@ public class Server {
 		}
 	}
 
-    public static void main(String[] args) {
-        Server s = new Server(12345);
-        s.serve();
-    }
+
+	public static void main(String args[]){
+		Server s = new Server(12345);
+		s.serve();
+	}	
 }
  
