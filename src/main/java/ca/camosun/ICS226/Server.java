@@ -25,7 +25,7 @@ public class Server {
 				synchronized(this){
 					System.out.println(gameOutput);
 				}
-				out.println(Thread.currentThread() + gameOutput);
+				out.println(gameOutput);
 			}	
 			clientSocket.close();		
 		} catch (Exception e){

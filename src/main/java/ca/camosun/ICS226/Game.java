@@ -2,11 +2,13 @@ package ca.camosun.ICS226;
 import java.util.Arrays;
 
 public class Game {
+    static int turn = 1;
     final static int BOARD_SIZE = 4;
     final static String CLEAR_BOARD_COMMAND = "C";
     final static String EMPTY_CELL = "_";
     final static String ERR_MSG = "E";
     final static String OK_MSG = "O";
+    final static int numOfPlayers = 3;
     final static String PLACE_PIECE_COMMAND = "P";
     final static String VIEW_BOARD_COMMAND = "G";
     static String[][][] INIT_BOARD_ARRAY = new String[BOARD_SIZE][BOARD_SIZE][BOARD_SIZE];  
@@ -20,6 +22,8 @@ public class Game {
         }
         return board;
     }
+    
+    String boardInGame[][][] = boardArray(INIT_BOARD_ARRAY);
 
     // Print the board in string format
     public static String printBoardAString(String [][][]board){
@@ -37,24 +41,23 @@ public class Game {
         return boardAsString;
     }
 
-    // Splits user input value into an array of integers 
-    public static int[] splitUserInput(String userInput){
-        final int INPUT_SIZE = 4;
+
+    // Removes first char of input, then splits input into an array of integers 
+    public static int[] splitUserInput(String userInput){ 
         String[] inputAsArray = userInput.split("");
-        int[] returnValue = new int[INPUT_SIZE]; 
+        int[] returnValue = new int[inputAsArray.length]; 
 
         try{
-            for(int i = 0; i < INPUT_SIZE; i++){
+            for(int i = 0; i < inputAsArray.length; i++){
                 Integer.parseInt(inputAsArray[i]);
                 // Validates that the numbers in the user input are within a valid range
+                returnValue[i] = Integer.parseInt(inputAsArray[i]);
                 if(returnValue[i] > 3 || returnValue[i] < 0){
                     throw new Error(ERR_MSG);
-                } else {
-                    returnValue[i] = Integer.parseInt(inputAsArray[i]);
-                }
+                } 
             }
         } catch(Exception e){
-            throw new Error(ERR_MSG);
+            throw new Error(e);
         }        
 
         return returnValue;
@@ -76,24 +79,35 @@ public class Game {
         return OK_MSG;
     }
 
+    public static void enforceTurns(int token) throws Exception{
+        if(token != turn){
+            throw new Exception(ERR_MSG);
+        } else if(turn > numOfPlayers) {
+            turn = 1;
+        } else {
+            turn++;
+        }
+    }
+
     public String game(String userInput){
         char firstChar = userInput.charAt(0);
         String firstCharString = Character.toString(firstChar);
         firstCharString = firstCharString.toUpperCase();
-        String boardInGame[][][] = boardArray(INIT_BOARD_ARRAY);
-        String output = "E*";
-        System.out.println(firstCharString);
+        String output = "";
+
         try{
             if(firstCharString.equals(VIEW_BOARD_COMMAND)){
                 output = printBoardAString(boardInGame);
-                return output;
+                output = output + "Player " + turn + "'s turn";
             } else if (firstCharString.equals(PLACE_PIECE_COMMAND)){
-                int[] splitUserInput = splitUserInput(userInput);
-                output = placePiece(splitUserInput, boardInGame);
-                return output;
+                String userInputToSplit = userInput.substring(1,5);
+                int[] splitUserInput = splitUserInput(userInputToSplit);
+                int token = splitUserInput[3];
+                enforceTurns(token);
+                output = placePiece(splitUserInput, boardInGame);                
             }
         } catch (Exception e){
-            throw new Error(ERR_MSG);
+            throw new Error(e);
         }
         return output;
     }
